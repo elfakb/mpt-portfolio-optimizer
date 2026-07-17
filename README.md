@@ -1,129 +1,87 @@
-# 🧮 MPT Portfolio Optimizer
+# MPT Portfolio Optimizer
 
-30 varlıktan oluşan bir portföyü (BIST hisseleri, uluslararası ETF'ler, kripto paralar,
-altın/emtia) Modern Portföy Teorisi (Markowitz) ve Risk Parity yaklaşımlarıyla optimize
-eden, sonuçları 5 yıllık backtest ile test eden interaktif bir araç.
+An interactive portfolio optimization tool based on Modern Portfolio Theory (Markowitz)
+and Risk Parity, covering 66 assets across BIST stocks, major US companies, international
+ETFs, cryptocurrencies, and gold/commodities.
 
-**[Canlı Demo](#)** ← deploy linkini buraya ekleyeceğiz
-
-![Efficient Frontier](docs/screenshot.png) ← ekran görüntüsü eklenebilir
+## Demo
 
 ---
 
-## 🎯 Bu Proje Ne Yapıyor?
+## Overview
 
-- 30 varlığın **Efficient Frontier**'ını (etkin sınır) hesaplar ve görselleştirir
-- **Sharpe oranını maksimize** eden optimal portföy ağırlıklarını bulur
-- Aynı varlıklarla **Risk Parity** stratejisini uygular ve karşılaştırır
-- Gerçekçi kısıtlar uygular: maksimum %30 kripto, minimum %10 altın
-- **5 yıllık backtest** ile "bu strateji gerçekte ne kazandırırdı" sorusuna cevap verir
-- Sonuçları **S&P 500 (SPY) benchmark'ı** ile kıyaslar
-- **VaR / CVaR** risk metriklerini hesaplar
-- Kullanıcının **kendi varlık seçimiyle** özel portföy oluşturmasına izin verir
+- Computes the Efficient Frontier and finds the Sharpe-maximizing portfolio
+- Implements Risk Parity on the same asset universe and compares it to Markowitz
+- Applies realistic constraints (e.g. max crypto weight, min gold weight)
+- Runs a 5-year backtest with monthly rebalancing, benchmarked against the S&P 500
+- Computes VaR / CVaR risk metrics
+- Lets users build a custom portfolio from their own asset selection
 
 ---
 
-## 📊 Matematiksel Arka Plan
+## Mathematical Background
 
-### 1. Markowitz Mean-Variance Optimizasyonu
-
-Modern Portföy Teorisi'nin temel fikri: bir portföyün beklenen getirisi, içindeki
-varlıkların ağırlıklı ortalamasıdır:
+**Markowitz Mean-Variance Optimization.** Portfolio return is a weighted average of asset
+returns; portfolio risk depends on how assets co-move, not just their individual volatility:
 
 ```
 E(Rp) = Σ wi · E(Ri)
+σp²   = Σ Σ wi · wj · σij
 ```
 
-Ama portföyün riski (varyansı) sadece varlıkların ayrı ayrı riskine değil,
-**birbirleriyle olan korelasyonlarına** da bağlıdır:
+This is the basis for diversification and is solved as a quadratic programming problem
+via PyPortfolioOpt / `cvxpy`.
 
-```
-σp² = Σ Σ wi · wj · σij
-```
-
-Burada `σij` varlık i ve j arasındaki kovaryanstır. Bu formül şunu gösterir:
-düşük veya negatif korelasyonlu varlıkları bir araya getirmek, bireysel risklerin
-toplamından **daha düşük** bir portföy riski üretebilir — çeşitlendirmenin
-matematiksel temeli budur.
-
-**Optimizasyon problemi**: Belirli bir risk seviyesinde getiriyi maksimize etmek
-(ya da tersi), bir quadratic programming (QP) problemidir:
-
-```
-maksimize:  w^T μ - (λ/2) w^T Σ w
-kısıt:      Σ wi = 1,  wi ≥ 0 (long-only)
-```
-
-Burada `λ` risk toleransını temsil eder. Bu projede PyPortfolioOpt kütüphanesi
-bu QP problemini `cvxpy` altyapısıyla çözüyor.
-
-### 2. Sharpe Oranı Maksimizasyonu
-
-Sharpe oranı, alınan her birim riske karşılık elde edilen "fazla" getiriyi ölçer:
+**Sharpe Ratio Maximization.**
 
 ```
 Sharpe = (E(Rp) - Rf) / σp
 ```
 
-Sharpe'ı maksimize eden portföy, Efficient Frontier üzerinde risksiz getiri
-noktasından çizilen teğet doğrunun değdiği noktadır (Tangency Portfolio).
-Bu proje `MAX_CRYPTO_WEIGHT` ve `MIN_GOLD_WEIGHT` gibi ek doğrusal kısıtlarla
-bu optimizasyonu gerçekçi sınırlar içinde çalıştırır.
+The Sharpe-maximizing portfolio is the tangency point between the risk-free rate and the
+Efficient Frontier, solved here under additional constraints.
 
-### 3. Risk Parity
-
-Markowitz optimizasyonu getiriyi merkeze koyar, bu da genelde az sayıda varlığa
-yoğunlaşan (konsantre) portföyler üretir. Risk Parity farklı bir felsefe önerir:
-**her varlığın portföy riskine katkısı eşit olsun.**
-
-Varlık `i`'nin marjinal risk katkısı:
+**Risk Parity.** Instead of optimizing for return, each asset's marginal contribution to
+portfolio risk is equalized:
 
 ```
 RCi = wi · (Σw)i / σp
 ```
 
-Risk Parity, tüm `RCi` değerlerini birbirine eşitlemeye çalışan bir optimizasyon
-problemidir. Bu projede `scipy.optimize.minimize` (SLSQP metodu) ile çözülüyor,
-çünkü PyPortfolioOpt'un hazır bir risk parity modülü yok.
+Solved via `scipy.optimize.minimize` (SLSQP).
 
-### 4. VaR ve CVaR
-
-**VaR (Value at Risk)**: belirli bir güven aralığında (%95) beklenen maksimum kayıp.
-Tarihsel yöntemde, günlük getiri dağılımının ilgili yüzdelik dilimine bakılır.
-
-**CVaR (Conditional VaR / Expected Shortfall)**: VaR'ı aşan senaryolarda
-ortalama kaybı gösterir — VaR'ın "kuyruk riskini" görmezden gelme sorununu çözer.
-
-Bu projede hem tarihsel hem de Monte Carlo simülasyonuna dayalı VaR/CVaR hesaplanıyor.
+**VaR & CVaR.** VaR estimates the maximum expected loss at a 95% confidence level from the
+historical return distribution. CVaR (Expected Shortfall) captures the average loss in the
+scenarios that exceed VaR.
 
 ---
 
-## 🗂️ Proje Yapısı
+## Project Structure
 
 ```
 mpt-portfolio-optimizer/
-├── app.py                  # Streamlit arayüzü (iki sekme: önerilen + özel portföy)
+├── app.py                  # Streamlit UI (suggested + custom portfolio)
 ├── data/
-│   ├── fetch_data.py       # yfinance'ten veri çeker, USD'ye normalize eder
-│   ├── raw/                # Ham fiyat verisi
-│   └── processed/          # Temizlenmiş, USD normalize veri
+│   ├── fetch_data.py       # Downloads and USD-normalizes data via yfinance
+│   ├── raw/
+│   └── processed/
 ├── src/
-│   ├── config.py           # Varlık listesi, kısıtlar, tarih aralığı
-│   ├── data_loader.py       # Veri yükleme yardımcı fonksiyonları
-│   ├── mean_variance.py     # Markowitz optimizasyonu
-│   ├── risk_parity.py       # Risk Parity optimizasyonu
-│   ├── risk_metrics.py      # VaR, CVaR, Monte Carlo
-│   ├── backtest.py          # 5 yıllık backtest + rebalancing
-│   └── visualization.py     # Plotly grafik fonksiyonları
+│   ├── config.py            # Asset universe, constraints, date range
+│   ├── data_loader.py
+│   ├── mean_variance.py     # Markowitz optimization
+│   ├── risk_parity.py       # Risk Parity optimization
+│   ├── risk_metrics.py      # VaR, CVaR
+│   ├── backtest.py          # Backtest and rebalancing
+│   └── visualization.py     # Plotly charts
 └── requirements.txt
 ```
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma
+## Setup
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/elfakb/mpt-portfolio-optimizer.git
 cd mpt-portfolio-optimizer
 
 python3 -m venv venv
@@ -131,52 +89,140 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 
 pip install -r requirements.txt
 
-python data/fetch_data.py     # Veriyi indir (30 varlık, ~5 yıl)
-
+python data/fetch_data.py
 streamlit run app.py
 ```
 
 ---
 
-## 📈 Örnek Sonuçlar (Son 5 Yıl Backtest)
+## Sample Backtest Results (5-Year)
 
-| Strateji | Toplam Getiri | Yıllık Getiri | Yıllık Volatilite | Sharpe | Maks. Drawdown |
+| Strategy | Total Return | Annual Return | Annual Volatility | Sharpe | Max Drawdown |
 |---|---|---|---|---|---|
-| Max Sharpe | 408.14% | 26.09% | 24.46% | ~1.07 | -27.80% |
-| Risk Parity | 101.14% | 10.48% | 11.31% | ~0.72 | -19.65% |
-| SPY (Benchmark) | 84.06% | 8.79% | 14.24% | - | -24.50% |
+| Max Sharpe | 408.14% | 26.09% | 24.46% | 1.07 | -27.80% |
+| Risk Parity | 101.14% | 10.48% | 11.31% | 0.72 | -19.65% |
+| SPY (Benchmark) | 84.06% | 8.79% | 14.24% | – | -24.50% |
 
-**Not:** Bu sonuçlar geçmiş veriye (backtest) dayanır ve gelecekteki performansı
-garanti etmez. 2021-2026 dönemi özellikle teknoloji ve kripto varlıklar için
-güçlü bir yükseliş dönemiydi; farklı bir dönemde sonuçlar önemli ölçüde
-değişebilir.
+
 
 ---
 
-## ⚠️ Sınırlamalar
+## Tech Stack
 
-- Beklenen getiriler **geçmiş ortalamalara** dayanıyor (`mean_historical_return`) —
-  bu, gelecekteki getirilerin geçmişe benzeyeceği varsayımını taşır ve genellikle
-  Markowitz optimizasyonunun en tartışmalı noktasıdır (Black-Litterman modeli bu
-  sorunu piyasa dengesi + öznel görüşlerle hafifletmeyi amaçlar — bu projenin
-  ikinci fazında ele alınacaktır)
-- İşlem maliyeti (transaction cost) ve vergi etkisi backtest'e dahil edilmemiştir
-- Kripto varlıklar 7/24 işlem görürken BIST/ABD borsaları belirli saatlerde
-  işlem görüyor; bu farkı hizalamak için forward-fill kullanıldı, bu basit bir
-  yaklaşımdır
+Python · PyPortfolioOpt · cvxpy · scipy · pandas · NumPy · yfinance · Plotly · Streamlit
+
+---
+---
+
+## MPT Portföy Optimizatörü
+
+BIST hisseleri, ABD'nin büyük şirketleri, uluslararası ETF'ler, kripto paralar ve
+altın/emtia dahil 66 varlık üzerinde, Modern Portföy Teorisi (Markowitz) ve Risk Parity
+temelli interaktif bir portföy optimizasyon aracı.
+
+
+## Demo 
 
 ---
 
-## 🛠️ Kullanılan Teknolojiler
+## Proje İçeriği
 
-`Python` · `PyPortfolioOpt` · `cvxpy` · `scipy` · `pandas` · `NumPy` · `yfinance` ·
-`Plotly` · `Streamlit`
+- Efficient Frontier'ı hesaplar, Sharpe oranını maksimize eden portföyü bulur
+- Aynı varlık evreninde Risk Parity stratejisini uygular ve Markowitz ile karşılaştırır
+- Gerçekçi kısıtlar uygular (maks. kripto ağırlığı, min. altın ağırlığı gibi)
+- Aylık rebalancing ile 5 yıllık backtest çalıştırır, S&P 500 ile kıyaslar
+- VaR / CVaR risk metriklerini hesaplar
+- Kullanıcının kendi varlık seçimiyle özel portföy oluşturmasına izin verir
+
+---
+
+## Matematiksel Çözümü
+
+**Markowitz Ortalama-Varyans Optimizasyonu.** Portföy getirisi, varlık getirilerinin
+ağırlıklı ortalamasıdır; portföy riski ise sadece bireysel volatiliteye değil, varlıkların
+birlikte hareket etme biçimine bağlıdır:
+
+```
+E(Rp) = Σ wi · E(Ri)
+σp²   = Σ Σ wi · wj · σij
+```
+
+Çeşitlendirmenin matematiksel temeli budur; optimizasyon PyPortfolioOpt / `cvxpy` ile
+çözülen bir quadratic programming problemidir.
+
+**Sharpe Oranı Maksimizasyonu.**
+
+```
+Sharpe = (E(Rp) - Rf) / σp
+```
+
+Sharpe'ı maksimize eden portföy, risksiz getiri ile Efficient Frontier arasındaki teğet
+noktadır; bu projede ek kısıtlar altında çözülür.
+
+**Risk Parity.** Getiriyi optimize etmek yerine, her varlığın portföy riskine marjinal
+katkısı eşitlenir:
+
+```
+RCi = wi · (Σw)i / σp
+```
+
+`scipy.optimize.minimize` (SLSQP) ile çözülür.
+
+**VaR & CVaR.** VaR, tarihsel getiri dağılımına dayanarak %95 güven aralığında beklenen
+maksimum kaybı gösterir. CVaR (Expected Shortfall), VaR'ı aşan senaryolardaki ortalama kaybı yakalar.
+
+---
+
+## Proje Yapısı
+
+```
+mpt-portfolio-optimizer/
+├── app.py                  # Streamlit arayüzü (önerilen + özel portföy)
+├── data/
+│   ├── fetch_data.py       # yfinance'ten veri çeker, USD'ye normalize eder
+│   ├── raw/
+│   └── processed/
+├── src/
+│   ├── config.py            # Varlık evreni, kısıtlar, tarih aralığı
+│   ├── data_loader.py
+│   ├── mean_variance.py     # Markowitz optimizasyonu
+│   ├── risk_parity.py       # Risk Parity optimizasyonu
+│   ├── risk_metrics.py      # VaR, CVaR
+│   ├── backtest.py          # Backtest ve rebalancing
+│   └── visualization.py     # Plotly grafikleri
+└── requirements.txt
 ```
 
 ---
 
-Bu README'de birkaç yer bilinçli olarak "boşluk" bıraktım:
-- `[Canlı Demo](#)` — deploy linkini yapıştıracağız
-- `docs/screenshot.png` — istersen en güzel ekran görüntünü (backtest grafiği gibi) `docs/` klasörüne koyup buraya bağlayabiliriz
+## Kurulum
 
-Deploy'a geçelim mi, yoksa README'de değiştirmek/eklemek istediğin bir şey var mı?
+```bash
+git clone https://github.com/elfakb/mpt-portfolio-optimizer.git
+cd mpt-portfolio-optimizer
+
+python3 -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
+
+python data/fetch_data.py
+streamlit run app.py
+```
+
+---
+
+## Örnek Backtest Sonuçları (5 Yıl)
+
+| Strateji | Toplam Getiri | Yıllık Getiri | Yıllık Volatilite | Sharpe | Maks. Drawdown |
+|---|---|---|---|---|---|
+| Max Sharpe | 408.14% | 26.09% | 24.46% | 1.07 | -27.80% |
+| Risk Parity | 101.14% | 10.48% | 11.31% | 0.72 | -19.65% |
+| SPY (Benchmark) | 84.06% | 8.79% | 14.24% | – | -24.50% |
+
+
+---
+
+## Kullanılan Teknolojiler
+
+Python · PyPortfolioOpt · cvxpy · scipy · pandas · NumPy · yfinance · Plotly · Streamlit
