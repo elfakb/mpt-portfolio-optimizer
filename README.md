@@ -18,8 +18,10 @@ S&P 500'e karşı 5 yıllık bir backtest çalıştırır.
 kısıtlarını belirler; uygulama aynı tam süreci — optimizasyon, Efficient Frontier, backtest —
 yalnızca bu özel seçim üzerinde çalıştırır.
 
+
 ## Demo
 
+**Canlı uygulama:** [https://mpt-portfolio-optimizer-elfakb.streamlit.app](https://mpt-portfolio-optimizer-kwsqpfsnzm2kzb86k27c66.streamlit.app/)
 
 https://github.com/user-attachments/assets/334abdef-1796-4749-aa26-1f65a9dfb8dc
 
@@ -149,7 +151,8 @@ BIST stocks, US stocks, ETFs, crypto, gold), sets their own constraints, and the
 the same full pipeline — optimization, Efficient Frontier, backtest — on that custom
 selection only.
 
-
+## Demo 
+**Live app:** [https://mpt-portfolio-optimizer-elfakb.streamlit.app](https://mpt-portfolio-optimizer-kwsqpfsnzm2kzb86k27c66.streamlit.app/)
 ---
 
 ## Overview
