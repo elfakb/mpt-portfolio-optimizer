@@ -1,0 +1,111 @@
+python data.fetch_data
+
+1- python -m data.fetch_data
+
+2- python -m src.mean_variance
+(base) elifakbas@Elif-MacBook-Air mpt-portfolio-optimizer % python -m src.mean_variance
+Optimal Ağırlıklar:
+  ASELS.IS: 11.93%
+  CAT: 6.19%
+  GC=F: 18.48%
+  LLY: 19.45%
+  NVDA: 11.21%
+  THYAO.IS: 0.27%
+  TUPRS.IS: 7.22%
+  WMT: 13.32%
+  XOM: 11.92%
+
+Getiri: 23.30% | Volatilite: 12.73% | Sharpe: 1.52
+
+
+3- python -m src.risk_parity
+
+(base) elifakbas@Elif-MacBook-Air mpt-portfolio-optimizer % python -m src.risk_parity
+Risk Parity Ağırlıkları:
+  LLY: 2.44%
+  XOM: 2.44%
+  UNH: 2.43%
+  CVX: 2.40%
+  WMT: 2.38%
+  XLE: 2.37%
+  VNQ: 2.35%
+  PG: 2.35%
+  GLD: 2.33%
+  KO: 2.33%
+  PDBC: 2.32%
+  GC=F: 2.30%
+  V: 2.29%
+  JNJ: 2.26%
+  EFA: 2.25%
+  SLV: 2.23%
+  MA: 2.23%
+  EEM: 2.21%
+  JPM: 2.16%
+  SPY: 2.15%
+  DIS: 2.08%
+  MSFT: 2.08%
+  AGG: 2.03%
+  TLT: 2.01%
+  AAPL: 1.99%
+  QQQ: 1.88%
+  CAT: 1.87%
+  XLK: 1.79%
+  BA: 1.78%
+  GOOGL: 1.77%
+  AMZN: 1.49%
+  META: 1.29%
+  ENKAI.IS: 1.22%
+  LOGO.IS: 1.20%
+  DOAS.IS: 1.20%
+  TUPRS.IS: 1.16%
+  ENJSA.IS: 1.09%
+  MGROS.IS: 1.06%
+  ARCLK.IS: 1.04%
+  BIMAS.IS: 1.04%
+  ASELS.IS: 1.03%
+  PETKM.IS: 1.02%
+  FROTO.IS: 1.00%
+  TCELL.IS: 0.99%
+  GUBRF.IS: 0.97%
+  GARAN.IS: 0.95%
+  BNB-USD: 0.93%
+  TAVHL.IS: 0.93%
+  VAKBN.IS: 0.92%
+  BTC-USD: 0.92%
+  SASA.IS: 0.92%
+  SISE.IS: 0.90%
+  EREGL.IS: 0.90%
+  PGSUS.IS: 0.90%
+  ISCTR.IS: 0.89%
+  YKBNK.IS: 0.89%
+  AKBNK.IS: 0.89%
+  KCHOL.IS: 0.88%
+  THYAO.IS: 0.87%
+  HALKB.IS: 0.87%
+  SAHOL.IS: 0.85%
+  TOASO.IS: 0.85%
+  NVDA: 0.67%
+  SOL-USD: 0.67%
+  XRP-USD: 0.59%
+  ETH-USD: 0.48%
+(base) elifakbas@Elif-MacBook-Air mpt-portfolio-optimizer % 
+
+
+4- python -m src.risk_metrics
+(base) elifakbas@Elif-MacBook-Air mpt-portfolio-optimizer %  python -m src.risk_metrics
+Tarihsel VaR (%95): 1.14%
+Tarihsel CVaR (%95): 1.78%
+
+Monte Carlo VaR (%95, 1 yıl): -3.06%
+Monte Carlo CVaR (%95, 1 yıl): 2.11%
+
+
+5- python -m src.backtest
+(base) elifakbas@Elif-MacBook-Air mpt-portfolio-optimizer % python -m src.backtest
+
+(base) elifakbas@Elif-MacBook-Air mpt-portfolio-optimizer % python -m src.backtest
+Başlangıç: 100,000 USD -> Bitiş: 477,022 USD
+Toplam Getiri: 372.19%
+Yıllık Getiri: 24.58%
+Yıllık Volatilite: 19.61%
+Maksimum Drawdown: -30.38%
