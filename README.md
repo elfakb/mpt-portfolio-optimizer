@@ -8,8 +8,8 @@ temelli interaktif bir portföy optimizasyon aracı.
 
 Uygulama iki modda çalışır:
 
-**1. Önerilen Portföy** — 66 varlıklık tam evreni kullanır. Kullanıcı iki kısıtı (maks.
-kripto ağırlığı, min. altın ağırlığı) slider'larla belirler; uygulama Max Sharpe ve Risk
+**1. Önerilen Portföy** — 66 varlıklığın hepsini kullanır. Kullanıcı iki kısıtı (maks.
+kripto ağırlığı, min. altın ağırlığı)  belirler; uygulama Max Sharpe ve Risk
 Parity portföylerini hesaplar, Efficient Frontier'ı çizer, risk metriklerini hesaplar ve
 S&P 500'e karşı 5 yıllık bir backtest çalıştırır.
 
